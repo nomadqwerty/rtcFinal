@@ -20,10 +20,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-      </head>
+      <head></head>
       <body className={inter.className}>
-        <DeviceProvider  >
+        <DeviceProvider>
           <Container id="root" className="p-0 m-0" fluid>
             {children}
           </Container>

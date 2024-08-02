@@ -1,6 +1,6 @@
-import { FullRtc } from "@/Components/FullRTC/FullRtc";
+import { FullRtc } from "../../components/FullRTC/FullRtc";
 import { Suspense } from "react";
-import Lobby from "@/Components/FullRTC/Lobby";
+import Lobby from "../../components/FullRTC/Lobby";
 import Link from "next/link";
 
 export default function Rtc() {
