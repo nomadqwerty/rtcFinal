@@ -1,0 +1,34 @@
+
+.side-bar-header {
+  display: flex;
+  /* border: 1px solid red; */
+  width: 100%;
+  align-items: center;
+  height: 10%;
+}
+
+.side-bar-header i{
+  float: right !important;
+}
+
+/* wrapper for side bar title*/
+.sidebar-title-wrapper{
+  width: 45%;
+}
+
+.sidebar-title{
+  font-weight: bold;
+  /* height: 5%; */
+  margin: none;
+}
+
+/* wrapper for side bar close button*/
+.header-close-btn-wrapper{
+  width: 50%;
+  justify-content: right !important;
+  /* border: 1px solid red; */
+}
+
+.header-close-btn:hover{
+  color: red !important;
+}
