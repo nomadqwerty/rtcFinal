@@ -584,6 +584,7 @@ const FullRtc = () => {
       socketRef.current.on("cosumeMedia", (data) => {
         console.log("setting up recv and consumer...");
         console.log(data);
+        peerConn = undefined;
         setCanConsume(data);
       });
       socketRef.current.on("cosumeClientMedia", (data) => {
@@ -1179,6 +1180,7 @@ const FullRtc = () => {
   const restartFullCall = async () => {
     console.log("room");
     if (msRoom === null) {
+      peerConn = undefined;
       socketRef.current.emit("createRoom", (data) => {
         console.log(data);
         setMsRoom(data.room);
@@ -2111,58 +2113,62 @@ const FullRtc = () => {
 
   // Function to start screen sharing
   let toggleScreenSharing = async () => {
-    if (!isScreenSharing && !screenSharingId) {
-      // Check for screensharing true and existing screenshareID
-      // If no IDs exist, get new stream for the screen stream
-      setIsScreenSharing(true);
-      try {
-        const stream = await navigator.mediaDevices.getDisplayMedia(
-          screenRecordConstraints
-        );
-
-        setStream(stream);
-        setScreenStream(stream);
-        localVideoRef.current.srcObject = stream;
-        setScreenSharingId(socketID);
-        console.log("current share screen user", localClientName, socketID);
+    if (msRoom === null) {
+      if (!isScreenSharing && !screenSharingId) {
+        // Check for screensharing true and existing screenshareID
+        // If no IDs exist, get new stream for the screen stream
         setIsScreenSharing(true);
-      } catch (e) {
-        console.error("Could not switch stream to screenshare", e);
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia(
+            screenRecordConstraints
+          );
+
+          setStream(stream);
+          setScreenStream(stream);
+          localVideoRef.current.srcObject = stream;
+          setScreenSharingId(socketID);
+          console.log("current share screen user", localClientName, socketID);
+          setIsScreenSharing(true);
+        } catch (e) {
+          console.error("Could not switch stream to screenshare", e);
+        }
+      } else {
+        // Check for screensharing true and existing screenshareID
+        // If IDs exist, get new stream for video and audio camera
+        setIsScreenSharing(false);
+
+        if (screenStream) {
+          screenStream.getTracks().forEach((track) => track.stop());
+          setScreenStream(null);
+          setScreenSharingId("");
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia(constraints); // Get video and audio devices from user
+          setStream(stream); // Switch stream to obtained media stream
+          localVideoRef.current.srcObject = stream;
+        } catch (e) {
+          console.error("Could not turn on user screen & switch stream", e);
+        }
+      }
+
+      if (socketID?.peerConnection) {
+        Object.values(socketID.peerConnection).forEach((peer) => {
+          const videoTrack = stream
+            ?.getTracks()
+            .find((track) => track.kind === "video");
+          if (videoTrack) {
+            peer
+              .getSenders()[1]
+              .replaceTrack(videoTrack)
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+        });
       }
     } else {
-      // Check for screensharing true and existing screenshareID
-      // If IDs exist, get new stream for video and audio camera
-      setIsScreenSharing(false);
-
-      if (screenStream) {
-        screenStream.getTracks().forEach((track) => track.stop());
-        setScreenStream(null);
-        setScreenSharingId("");
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints); // Get video and audio devices from user
-        setStream(stream); // Switch stream to obtained media stream
-        localVideoRef.current.srcObject = stream;
-      } catch (e) {
-        console.error("Could not turn on user screen & switch stream", e);
-      }
-    }
-
-    if (socketID?.peerConnection) {
-      Object.values(socketID.peerConnection).forEach((peer) => {
-        const videoTrack = stream
-          ?.getTracks()
-          .find((track) => track.kind === "video");
-        if (videoTrack) {
-          peer
-            .getSenders()[1]
-            .replaceTrack(videoTrack)
-            .catch((e) => {
-              console.error(e);
-            });
-        }
-      });
+      alert("screen sharing is disabled on backup call");
     }
   };
 
