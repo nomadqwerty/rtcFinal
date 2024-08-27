@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev-secure": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -20,6 +19,7 @@
     "react-bootstrap": "^2.10.2",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18",
+    "react-hot-toast": "^2.4.1",
     "sass": "^1.72.0",
     "scss": "^0.2.4",
     "socket.io": "^4.7.5",

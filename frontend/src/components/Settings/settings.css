@@ -1,65 +1,48 @@
-#settings-wrapper {
-  display: flex;
-  flex-direction: column;
-  display: none;
-  width: 100%;
-  margin: auto;
-  padding-top: 0.5rem;
-  height: 100%;
-  overflow: scroll;
-}
+#settings-wrapper{
+    display: flex;
+    display: none;
+    width: 100%;
+    margin: auto;
+    padding-top: 0.5rem;
+    height: 100%;
+  }
 
-#settingsVideo {
-  max-height: 20vh;
-  background: #3c3c3c !important;
-}
+  .test-topic{
+    font-weight: bold;
+  }
+  .settings-topic{
+    /* min-height: 10vh;
+    border: 1px solid red; */
+  }
 
-.test-topic {
-  font-weight: bold;
-}
+  .device-test-wrapper{
+    width: 100%;
+    /* border: 1px solid red; */
+    margin: auto;
+  }
 
-.header-close-btn{
-  /* border: 1px solid red; */
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-}
-/* .settings-topic {
-  min-height: 10vh;
-    border: 1px solid red;
-} */
 
-.device-test-wrapper {
-  width: 100%;
-  /* border: 1px solid red; */
-  margin: auto;
-}
+  .device-test-output-wrapper{
+    display: flex;
+    align-items: center;
+    border: 2px solid ;
+    border-radius: 0.3rem;
+    /* justify-self: flex-end; */
+  }
 
-.device-test-output-wrapper {
-  display: flex;
-  align-items: center;
-  border: 2px solid;
-  border-radius: 0.3rem;
+  .settings-start-button{
+    background-color: #EEEEEE !important;
+    border-radius: 0.2rem;
+    /* justify-content: flex-start; */
+  }
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* justify-self: flex-end; */
-}
+  .device-test-output{
+    align-items: center;
+    margin: 0px;
+    width: 100%;
+    padding: 1.5rem;
+  }
 
-.settings-start-button {
-  background-color: #eeeeee !important;
-  border-radius: 0.2rem;
-  /* justify-content: flex-start; */
-}
-
-.device-test-output {
-  align-items: center;
-  margin: 0px;
-  width: 100%;
-  padding: 1.5rem;
-}
-
-.device-test-output:focus {
-  border: none !important;
-}
+  .device-test-output:focus{
+    border: none!important;
+  }
