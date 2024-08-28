@@ -11,7 +11,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // import { SocketContext, socket } from "./context/SocketContext";
 import { ConferenceProvider } from "@/context/conference.context";
 import { Container } from "react-bootstrap";
-import Loading from "@/Components/loading";
+import Loading from "../components/loading";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,11 +25,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head></head>
       <body className={inter.className}>
-        <Suspense fallback={<Loading/>}>
-        <Container id="root" className="p-0 m-0" fluid>
-          <Toaster position="top-right" />
-          <ConferenceProvider>{children}</ConferenceProvider>
-        </Container>
+        <Suspense fallback={<Loading />}>
+          <Container id="root" className="p-0 m-0" fluid>
+            <Toaster position="top-right" />
+            <ConferenceProvider>{children}</ConferenceProvider>
+          </Container>
         </Suspense>
         <BootstrapClient />
       </body>
