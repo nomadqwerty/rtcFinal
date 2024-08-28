@@ -303,6 +303,7 @@ const FullRtc = () => {
   useEffect(() => {
     if (roomRouterRtp) {
       (async () => {
+        setSocketId(socketObj.id);
         await createProducerDevices(
           producerDevices,
           roomRouterRtp,
