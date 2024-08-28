@@ -1,9 +1,10 @@
-import ListGroup from "react-bootstrap/ListGroup";
+import Dropdown from "react-bootstrap/Dropdown";
 
 const mediaList = (remoteVideoStream) => {
   try {
     return remoteVideoStream.map((vid, i) => {
-      return vid.component;
+      console.log(vid);
+      return <div key={vid.fromId}>{vid.component}</div>;
     });
   } catch (error) {
     console.log(error.message);
@@ -15,10 +16,14 @@ const screenArray = (remoteScreenStream) => {
   try {
     let showing = {};
     return remoteScreenStream.map((screen, i) => {
-      console.log(screen);
       if (!showing[screen.fromId]) {
         showing[screen.fromId] = screen;
-        return screen.component;
+
+        if (screen.track.muted === false) {
+          return screen.component;
+        } else {
+          return <></>;
+        }
       } else {
         delete showing[screen.fromId];
         return <></>;
@@ -66,11 +71,12 @@ const mediaDeviceList = (devices, onSetMediaDevice, setSelectedMediaDevice) => {
   return devices.map((device, i) => {
     try {
       return (
-        <ListGroup.Item key={i}>
-          <li onClick={onSetMediaDevice(i, setSelectedMediaDevice)} key={i}>
+        <Dropdown.Item>
+          {" "}
+          <li onClick={onSetMediaDevice(i, setSelectedMediaDevice)}>
             {device.label}
           </li>
-        </ListGroup.Item>
+        </Dropdown.Item>
       );
     } catch (error) {
       console.log(error.message);
@@ -79,4 +85,26 @@ const mediaDeviceList = (devices, onSetMediaDevice, setSelectedMediaDevice) => {
   });
 };
 
-export { mediaList, screenArray, messagesArray, mediaDeviceList };
+const participantsCompList = (participantsList) => {
+  return participantsList.map((participant, i) => {
+    try {
+      console.log(participant);
+      return (
+        <h1 key={i} id={`${participant.participantId}-name`}>
+          {participant.participantName}
+        </h1>
+      );
+    } catch (error) {
+      console.log(error.message);
+      return <></>;
+    }
+  });
+};
+
+export {
+  mediaList,
+  screenArray,
+  messagesArray,
+  mediaDeviceList,
+  participantsCompList,
+};

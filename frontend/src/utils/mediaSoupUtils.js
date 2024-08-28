@@ -360,6 +360,9 @@ const produceAudioStream = (
               // TODO: store producer and and track state
               producerTransports.audioProducerTransport.produce(audParams);
               const audioEl = document.getElementById("local-audio");
+              audioEl.streaming = true;
+
+              console.log(audioEl.streaming);
               const newAudioStream = new MediaStream([track]);
               audioEl.srcObject = newAudioStream;
             }
@@ -370,10 +373,11 @@ const produceAudioStream = (
           toast.success("audio stream has started");
         } else {
           const audioEl = document.getElementById("local-audio");
-          console.log(audioEl.muted);
-          if (!audioEl.muted) {
+          console.log(audioEl.streaming);
+
+          if (audioEl.streaming) {
             audioEl.pause();
-            audioEl.muted = true;
+            audioEl.streaming = false;
             socket.emit("toggleMedia", {
               id: socket.id,
               type: "audio",
@@ -386,7 +390,7 @@ const produceAudioStream = (
             toast.error("audio stream is muted");
           } else {
             audioEl.play();
-            audioEl.muted = false;
+            audioEl.streaming = true;
             socket.emit("toggleMedia", {
               id: socket.id,
               type: "audio",
@@ -471,9 +475,9 @@ const produceScreenStream = (
             isStreamingAudio === false &&
             isStreamingVideo === false
           ) {
-            // alert("to share screen, stream either video or audio");
+            toast.error("to share screen, start video or audio");
           } else if (isStreamingScreen === true) {
-            // alert("already sharing screen");
+            toast.error("already sharing screen");
           }
         }
       } catch (err) {

@@ -1,0 +1,27 @@
+.permission-error-div {
+  width: 50%;
+  height: 80%;
+  margin: auto;
+  /* border: 1px solid red; */
+  text-align: center;
+}
+
+.permission-image-div,
+.permission-message-div {
+  height: 50%;
+  /* border: 1px solid red; */
+}
+/* .permission-image-div {
+
+  } */
+
+.error-image {
+  width: 70%;
+  height: 80%;
+}
+.permission-message-div {
+  /* display: flex; */
+  width: 40%;
+  align-items: center;
+  margin: auto;
+}

@@ -1,10 +1,12 @@
+import toast from "react-hot-toast";
 const getUserMedia = async (
   navigator,
   setSocketId,
   setSocket,
   socketObj,
   setVideoDevices,
-  setAudioDevices
+  setAudioDevices,
+  setIsMediaGranted,
 ) => {
   if (navigator.mediaDevices) {
     try {
@@ -18,12 +20,15 @@ const getUserMedia = async (
           if (track.kind === "video") {
             const videoEl = document.getElementById("local-video");
             const newVideoStream = new MediaStream([track]);
-            videoEl.srcObject = newVideoStream;
+            if(videoEl){
+            videoEl.srcObject = newVideoStream;}
           }
           if (track.kind === "audio") {
             const audioEl = document.getElementById("local-audio");
             const newAudioStream = new MediaStream([track]);
+            if(audioEl){
             audioEl.srcObject = newAudioStream;
+            }
           }
         });
         const mediaDevices = await navigator.mediaDevices.enumerateDevices();
@@ -44,12 +49,31 @@ const getUserMedia = async (
         setSocketId(socketObj.id);
         setSocket(socketObj);
         // set permissions to true
+        setIsMediaGranted(true);
+        const permissionContainer = document.getElementById("mediaPermissionContainer")
+        if (permissionContainer){
+          permissionContainer.style.display = "none"
+        }
       } else {
+        setIsMediaGranted(false);
+        const permissionContainer = document.getElementById("mediaPermissionContainer")
+        if (permissionContainer){
+          permissionContainer.style.display = "block"
+        }
         // set permissions to false
       }
     } catch (error) {
       console.log(error.message);
-      // set permissions to false
+      if (error.message === "Permission denied"){
+        toast.error("Media device permissions denied")
+      // set media-permissions state to false 
+      setIsMediaGranted(false);
+      const permissionContainer = document.getElementById("mediaPermissionContainer")
+        if (permissionContainer){
+          permissionContainer.style.display = "block"
+        }
+      }
+      // set media-permissions state set to false
     }
   }
 };
@@ -249,6 +273,7 @@ const onSetVideoDevice = (idx, setSelectedVideoDevice) => {
   try {
     return (e) => {
       setSelectedVideoDevice(idx);
+      console.log(idx);
     };
   } catch (error) {
     console.log(error.message);

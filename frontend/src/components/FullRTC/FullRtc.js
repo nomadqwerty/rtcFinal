@@ -10,6 +10,7 @@ import { Device } from "mediasoup-client";
 import Settings from "../Settings/Settings";
 import { videoParams, audioParams } from "../../utils/config";
 import toast from "react-hot-toast";
+import { MediaPermission } from "../MediaPermission/MediaPermission";
 // import Link from "next/link";
 
 import {
@@ -43,6 +44,7 @@ import {
   mediaList,
   screenArray,
   mediaDeviceList,
+  participantsCompList,
 } from "./Lists";
 
 import {
@@ -53,7 +55,7 @@ import {
   produceScreenStream,
 } from "../../utils/mediaSoupUtils";
 
-let socketObj = io.connect(process.env.NEXT_PUBLIC_SIGNAL_HOST, {
+let socketObj = io(process.env.NEXT_PUBLIC_SIGNAL_HOST, {
   transports: ["websocket"],
 });
 
@@ -69,8 +71,12 @@ const FullRtc = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
+  const [isMediaGranted, setIsMediaGranted] = useState(null); // for media permissions
+  const [participantsList, setParticipantsList] = useState([]); // for participants list
 
   const messagesEndRef = useRef(null);
+  const localClientNameRef = useRef(null);
+  const localClientVideoRef = useRef(null);
 
   let toggleChat = async () => {
     const messagesContainer = document.getElementById("component_wrapper");
@@ -246,7 +252,8 @@ const FullRtc = () => {
               setSocket,
               socketObj,
               setVideoDevices,
-              setAudioDevices
+              setAudioDevices,
+              setIsMediaGranted
             );
           } else {
             toast.error("you are not in a room");
@@ -265,6 +272,12 @@ const FullRtc = () => {
   }, []);
 
   useEffect(() => {
+    if (participantsList.length > 0) {
+      console.log(participantsList);
+    }
+  }, [participantsList]);
+
+  useEffect(() => {
     if (socket && confState) {
       console.log(socketId);
 
@@ -275,7 +288,13 @@ const FullRtc = () => {
           accessKey,
           socketId,
         },
-        onJoinRoom(roomRouterRtp, setRoomRouterRtp, messages, setMessages)
+        onJoinRoom(
+          roomRouterRtp,
+          setRoomRouterRtp,
+          messages,
+          setMessages,
+          setParticipantsList
+        )
       );
     }
   }, [socket]);
@@ -284,7 +303,6 @@ const FullRtc = () => {
   useEffect(() => {
     if (roomRouterRtp) {
       (async () => {
-        setSocketId(socketObj.id);
         await createProducerDevices(
           producerDevices,
           roomRouterRtp,
@@ -348,7 +366,10 @@ const FullRtc = () => {
           setConsumeScreenState
         )
       );
-      socket.on("peerConnected", onPeerConnected());
+      socket.on(
+        "peerConnected",
+        onPeerConnected(setParticipantsList, participantsList)
+      );
       socket.on("incomingMessage", onIncomingMessage(messages, setMessages));
 
       socket.on(
@@ -370,7 +391,9 @@ const FullRtc = () => {
           accessKey,
           userName,
           socketId,
-          socket
+          socket,
+          participantsList,
+          setParticipantsList
         )
       );
 
@@ -506,6 +529,7 @@ const FullRtc = () => {
   const audioList = mediaList(remoteAudioStream);
   const screenList = screenArray(remoteScreenStream);
   const messagesList = messagesArray(messages, userName);
+  const remoteNamesList = participantsCompList(participantsList);
 
   // Scroll to the bottom of the chat when messages change
   useEffect(() => {
@@ -548,44 +572,65 @@ const FullRtc = () => {
     }
   }, [selectedAudioDevice]);
 
+  useEffect(() => {
+    if (!isCameraOn) {
+      // const localClientVideo = document.getElementById("local-video"); //get localvideo
+      // const localClientName = document.getElementById("local-video"); //get local username
+
+      localClientNameRef.current.style.display = "block";
+      localClientVideoRef.current.style.display = "none";
+
+      console.log("is camera on: ", isCameraOn);
+    } else {
+      localClientNameRef.current.style.display = "none";
+      localClientVideoRef.current.style.display = "block";
+    }
+  }, [isCameraOn]);
+
   //////////////////////////ui
 
   return (
     <main className="containerr m-0 p-0">
       <Row id="room_container" className="p-0 m-0">
         <Col xs={12} id="members_container" className="p-0 m-0">
-          <Row id="videos" className="p-0 m-0">
-            <Col className="p-0 m-0 videoBg" id="user1_div">
-              {/* {stream && ( */}
-              <video
-                className="videoPlayer p-0"
-                id="local-video"
-                autoPlay
-                playsInline
-              ></video>
-              <audio
-                className="VideoElem"
-                id={`local-audio`}
-                autoPlay
-                playsInline
-                muted
-              ></audio>
-              <h1 id="localClientName" className="clientDisplayName">
-                {/* {localClientName} */}
-              </h1>
-            </Col>
+          {isMediaGranted === false ? <MediaPermission /> : null}
 
-            <Col id="user2_div" className="p-0 m-0 videoBg">
-              <div className="videoWrapper">{videoList}</div>
+          <div id="videos" className="p-0 m-0">
+            <div id="videoContainer" className="p-0 m-0 videoBg">
+              <div className="videoWrapper">
+                <div id="localVideoWrapper">
+                  <video
+                    ref={localClientVideoRef}
+                    className="videoPlayer p-0"
+                    id="local-video"
+                    autoPlay
+                    playsInline
+                  />
+                  <h1 ref={localClientNameRef} id="local-username">
+                    {userName}
+                  </h1>
+                  <audio
+                    className="VideoElem"
+                    id={`local-audio`}
+                    autoPlay
+                    playsInline
+                    muted
+                  ></audio>
+                  {/* </div> */}
+
+                  {/* <div id="remoteVideoWrapper"> */}
+                  {remoteNamesList}
+
+                  {videoList}
+                </div>
+              </div>
               {audioList}
-              <h1 id="remoteClientName" className="clientDisplayName">
-                {/* {remoteClientName} */}
-              </h1>
-            </Col>
-            <Col id="user2_div" className="p-0 m-0 videoBg">
+            </div>
+
+            <div id="screenContainer" className="p-0 m-0 videoBg">
               <div className="screenWrapper">{screenList}</div>
-            </Col>
-          </Row>
+            </div>
+          </div>
         </Col>
 
         <Col xs={12} className="footer-container">
@@ -602,7 +647,13 @@ const FullRtc = () => {
               >
                 <img
                   className="icon"
-                  src={isMicOn ? "/icons/mic-on.svg" : "/icons/mic-off.svg"}
+                  src={
+                    isMicOn
+                      ? "/icons/mic-on.svg"
+                      : isMediaGranted === false
+                      ? "/icons/mic-no-permission.svg"
+                      : "/icons/mic-off.svg"
+                  }
                   alt="Mikrofontaste"
                   onClick={produceAudioStream(
                     isStreamingAudio,
@@ -629,6 +680,8 @@ const FullRtc = () => {
                   src={
                     isCameraOn
                       ? "/icons/camera-on.svg"
+                      : isMediaGranted === false
+                      ? "/icons/camera-no-permission.svg"
                       : "/icons/camera-off.svg"
                   }
                   alt="Kamerataste"
@@ -770,6 +823,11 @@ const FullRtc = () => {
                       id="sendMsgBtn"
                       title="Chat-Nachricht senden"
                       className="sendMsgBtn btn"
+                      onClick={() => {
+                        const input = document
+                          .getElementById("msgInput")
+                          .focus();
+                      }}
                     >
                       <img
                         alt="Chat-Nachricht senden"

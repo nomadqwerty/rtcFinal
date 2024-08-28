@@ -1,5 +1,11 @@
 import toast from "react-hot-toast";
-const onJoinRoom = (roomRouterRtp, setRoomRouterRtp, messages, setMessages) => {
+const onJoinRoom = (
+  roomRouterRtp,
+  setRoomRouterRtp,
+  messages,
+  setMessages,
+  setParticipantsList
+) => {
   return (data) => {
     // room is set up start setting up to produce streams (video, audio).
     try {
@@ -10,6 +16,9 @@ const onJoinRoom = (roomRouterRtp, setRoomRouterRtp, messages, setMessages) => {
       ) {
         if (roomRouterRtp === null) {
           console.log(data);
+          if (data.participants) {
+            setParticipantsList([...data.participants]);
+          }
           setRoomRouterRtp(data);
           console.log(data.messages);
           for (let message of data.messages) {
@@ -28,9 +37,13 @@ const onJoinRoom = (roomRouterRtp, setRoomRouterRtp, messages, setMessages) => {
   };
 };
 
-const onPeerConnected = () => {
+const onPeerConnected = (setParticipantsList, participantsList) => {
   return (data) => {
-    toast.success(`${data.name} joined the room`);
+    participantsList.push(data);
+    const participants = [...participantsList];
+    setParticipantsList(participants);
+    console.log(data);
+    toast.success(`${data.participantName} joined the room`);
   };
 };
 
@@ -268,15 +281,30 @@ const onConsumeState = (
                         });
 
                       if (remoteProducer.kind === "video" && type === "video") {
+                        console.log(remoteProducer);
+                        let display = "block";
+                        let nameDisplay = "none";
+                        let muted = false;
+                        if (remoteProducer?.action === "pause") {
+                          display = "none";
+                          muted = true;
+                          nameDisplay = "block";
+                        }
                         const videoEl = (
                           <video
                             className="videoPlayer p-0 user2 remote"
                             id={`${remoteProducer.from}-video`}
-                            key={remoteProducer.from}
+                            // key={remoteProducer.from}
                             autoPlay
+                            muted={muted}
+                            style={{ display: display }}
                             playsInline
                           ></video>
                         );
+                        const nameEl = document.getElementById(
+                          `${remoteProducer.from}-name`
+                        );
+                        nameEl.style.display = nameDisplay;
 
                         remoteProducer.videoStreamObject = consumerData;
                         socket.emit("consumerResume", {
@@ -291,6 +319,7 @@ const onConsumeState = (
                           type,
                           track: remoteProducer.videoStreamObject.track,
                           component: videoEl,
+                          name: remoteProducer.name,
                         };
 
                         const oldStreams = remoteStreams;
@@ -299,14 +328,24 @@ const onConsumeState = (
                         const overWrite = [...oldStreams];
 
                         setRemoteStream(overWrite);
+                        if (remoteProducer?.action !== "pause") {
+                          toast.success(
+                            `receiving ${type} stream from ${remoteProducer.name}`
+                          );
+                        }
                       }
                       if (remoteProducer.kind === "audio" && type === "audio") {
+                        let muted = false;
+                        if (remoteProducer?.action === "pause") {
+                          muted = true;
+                        }
                         const audioEl = (
                           <audio
                             className="audioElem"
                             id={`${remoteProducer.from}-audio`}
                             key={remoteProducer.from}
                             autoPlay
+                            muted={muted}
                             playsInline
                           ></audio>
                         );
@@ -331,12 +370,18 @@ const onConsumeState = (
                         const overWrite = [...oldStreams];
 
                         setRemoteStream(overWrite);
+                        if (remoteProducer?.action !== "pause") {
+                          toast.success(
+                            `receiving ${type} stream from ${remoteProducer.name}`
+                          );
+                        }
                       }
                       // console.log(remoteMediaStreams);
 
                       if (
                         remoteProducer.kind === "screen" &&
-                        type === "screen"
+                        type === "screen" &&
+                        remoteProducer.action === "play"
                       ) {
                         const videoEl = (
                           <video
@@ -369,11 +414,12 @@ const onConsumeState = (
                         const overWrite = [...oldStreams];
 
                         setRemoteStream(overWrite);
+                        if (remoteProducer?.action !== "pause") {
+                          toast.success(
+                            `receiving ${type} stream from ${remoteProducer.name}`
+                          );
+                        }
                       }
-                      console.log(remoteProducer);
-                      toast.success(
-                        `receiving ${type} stream from ${remoteProducer.name}`
-                      );
                     }
                   }
                 );
@@ -395,7 +441,9 @@ const onParticipantLeft = (
   accessKey,
   userName,
   socketId,
-  socket
+  socket,
+  participantsList,
+  setParticipantsList
 ) => {
   return (data) => {
     try {
@@ -403,6 +451,8 @@ const onParticipantLeft = (
       const videoEl = document.getElementById(`${data.participantId}-video`);
       const audioEl = document.getElementById(`${data.participantId}-audio`);
       const screenEl = document.getElementById(`${data.participantId}-screen`);
+      const nameEl = document.getElementById(`${data.participantId}-name`);
+
       if (videoEl) {
         videoEl.style.display = "none";
       }
@@ -412,10 +462,14 @@ const onParticipantLeft = (
       if (screenEl) {
         screenEl.style.display = "none";
       }
+      if (nameEl) {
+        nameEl.style.display = "none";
+      }
 
       console.log(videoEl);
       console.log(audioEl);
       console.log(screenEl);
+      console.log(nameEl);
 
       if (
         remoteVideoProducers[data.participantId] ||
@@ -446,6 +500,13 @@ const onParticipantLeft = (
         delete remoteScreenProducers[data.participantId];
         console.log(remoteScreenProducers);
       }
+      for (let i = 0; i < participantsList.length; i++) {
+        if (participantsList[i].participantId === data.participantId) {
+          console.log("removed from list: ", participantsList[i].participantId);
+          participantsList.splice(i, 1);
+        }
+      }
+      setParticipantsList([...participantsList]);
       toast.error(`${name} left the room`);
     } catch (error) {
       console.log(error.message);
@@ -498,14 +559,31 @@ const ontoggleRemoteMedia = () => {
   return (data) => {
     console.log(data, "mute");
     const remoteMediaEl = document.getElementById(`${data.id}-${data.type}`);
+    const nameEl = document.getElementById(`${data.id}-name`);
+
     if (remoteMediaEl) {
       if (data.action === "play") {
         remoteMediaEl.play();
+        remoteMediaEl.style.display = "block";
+        if (nameEl && data.type === "video") {
+          nameEl.style.display = "none";
+        }
+        if (data.type === "audio") {
+          remoteMediaEl.muted = false;
+        }
+        //set remote name or video depedning on remote camera state
         // alert(`${data.type} stream for ${data.id} has been unmuted`);
         toast.success(`${data.type} for ${data.name} stream been unmuted`);
       }
       if (data.action === "pause") {
+        remoteMediaEl.style.display = "none";
         remoteMediaEl.pause();
+        if (nameEl && data.type === "video") {
+          nameEl.style.display = "block";
+        }
+        if (data.type === "audio") {
+          remoteMediaEl.muted = true;
+        }
         toast.error(`${data.type} for ${data.name} stream been muted`);
         // alert(`${data.type} stream for ${data.id} has been muted`);
       }

@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef, useImperativeHandle } from "react";
-import { Form } from "react-bootstrap";
-import { Row, Col } from "react-bootstrap";
+// import { Form } from "react-bootstrap";
+import { Row, Col, Form } from "react-bootstrap";
 import ListGroup from "react-bootstrap/ListGroup";
+import Dropdown from "react-bootstrap/Dropdown";
+
 import "./settings.css";
 
 const Settings = ({ ...props }) => {
@@ -20,11 +22,11 @@ const Settings = ({ ...props }) => {
           // alert("audio stream is muted");
           if (id === "test-video") {
             setToggleVideo(false);
+            mediaEl.style.opacity = 0;
           }
           if (id === "test-audio") {
             setToggleAudio(false);
           }
-          mediaEl.style.opacity = 0;
         } else {
           mediaEl.play();
           mediaEl.muted = false;
@@ -46,16 +48,34 @@ const Settings = ({ ...props }) => {
         <h1>Einstellungen</h1>
       </Col>
 
-      <Col className="mb-4">
+      <Col className="mb-4 camera-test-section">
         <p className="test-topic">Test Ihrer Kamera</p>
 
-        <video
-          className="videoPlayer p-0 mb-2"
-          id="test-video"
-          autoPlay
-          playsInline
-          controls
-        ></video>
+        <Col xs={9}>
+          <Dropdown>
+            <Dropdown.Toggle variant="light" id="dropdown-basic">
+              video devices
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>{props.videoList}</Dropdown.Menu>
+          </Dropdown>
+        </Col>
+
+        <div
+          className="videoPlayer_wrapper mb-3"
+          style={{
+            marginTop: "10px",
+          }}
+        >
+          <video
+            className="videoPlayer"
+            id="test-video"
+            autoPlay
+            playsInline
+            controls
+          ></video>
+        </div>
+
         <Row className="device-test-wrapper" xxs={1} xs={2}>
           <Col xs={3} className="p-0">
             <button
@@ -87,9 +107,6 @@ const Settings = ({ ...props }) => {
               readOnly
             />
           </Col>
-          <Col xs={9}>
-            <ListGroup>{props.videoList}</ListGroup>
-          </Col>
         </Row>
       </Col>
 
@@ -97,6 +114,15 @@ const Settings = ({ ...props }) => {
         <Row className="device-test-wrapper" xxs={1} xs={2}>
           <Col xs={12} className="p-0">
             <p className="test-topic">Test Ihrer Mikrofons</p>
+            <Col xs={9}>
+              <Dropdown>
+                <Dropdown.Toggle variant="light" id="dropdown-basic">
+                  audio devices
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>{props.audioList}</Dropdown.Menu>
+              </Dropdown>
+            </Col>
             <audio
               className="audioElem"
               id={`test-audio`}
@@ -104,6 +130,9 @@ const Settings = ({ ...props }) => {
               playsInline
               muted={props.isStreamingAudio ? true : false}
               controls
+              style={{
+                marginTop: "10px",
+              }}
             ></audio>
           </Col>
           <Col xs={3} className="p-0">
@@ -135,60 +164,7 @@ const Settings = ({ ...props }) => {
               readOnly
             />
           </Col>
-          <Col xs={9}>
-            <ListGroup>{props.audioList}</ListGroup>
-          </Col>
         </Row>
-      </Col>
-
-      <Col className="mb-4">
-        <Row className="device-test-wrapper" xxs={1} xs={2}>
-          <Col xs={12} className="p-0">
-            <p className="test-topic">Test Ihrer Lautsprecher</p>
-          </Col>
-          <Col xs={3} className="p-0">
-            <button
-              //   id="test-device-button"
-              type="button"
-              title="Klicken Sie auf Start, um den Lautsprecher zu testen"
-              className="btn settings-start-button"
-            >
-              Start
-            </button>
-          </Col>
-
-          <Col
-            xs={9}
-            className={`device-test-output-wrapper p-0 
-          ${
-            props.isSpeakerOn && props.isSpeakerTest
-              ? "border-primary"
-              : !props.isSpeakerOn && props.isSpeakerTest
-              ? "border-danger"
-              : "border-1"
-          }`}
-          >
-            <input
-              id="speakerTestOutput"
-              placeholder="Klicken Sie auf Start, um den Lautsprecher zu testen"
-              className="device-test-output p-1 border-0"
-              readOnly
-            />
-          </Col>
-        </Row>
-      </Col>
-      <Col>
-        <Form>
-          <div className="mb-3">
-            <p className="test-topic">Weitere Optionen</p>
-            <Form.Check // prettier-ignore
-              type="checkbox"
-              id="radio-check"
-              className="text-muted"
-              label="Hintergrund weichzeichnen"
-            />
-          </div>
-        </Form>
       </Col>
 
       <audio style={{ display: "none" }} />
