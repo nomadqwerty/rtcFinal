@@ -6,7 +6,7 @@ const getUserMedia = async (
   socketObj,
   setVideoDevices,
   setAudioDevices,
-  setIsMediaGranted,
+  setIsMediaGranted
 ) => {
   if (navigator.mediaDevices) {
     try {
@@ -20,14 +20,15 @@ const getUserMedia = async (
           if (track.kind === "video") {
             const videoEl = document.getElementById("local-video");
             const newVideoStream = new MediaStream([track]);
-            if(videoEl){
-            videoEl.srcObject = newVideoStream;}
+            if (videoEl) {
+              videoEl.srcObject = newVideoStream;
+            }
           }
           if (track.kind === "audio") {
             const audioEl = document.getElementById("local-audio");
             const newAudioStream = new MediaStream([track]);
-            if(audioEl){
-            audioEl.srcObject = newAudioStream;
+            if (audioEl) {
+              audioEl.srcObject = newAudioStream;
             }
           }
         });
@@ -50,27 +51,33 @@ const getUserMedia = async (
         setSocket(socketObj);
         // set permissions to true
         setIsMediaGranted(true);
-        const permissionContainer = document.getElementById("mediaPermissionContainer")
-        if (permissionContainer){
-          permissionContainer.style.display = "none"
+        const permissionContainer = document.getElementById(
+          "mediaPermissionContainer"
+        );
+        if (permissionContainer) {
+          permissionContainer.style.display = "none";
         }
       } else {
         setIsMediaGranted(false);
-        const permissionContainer = document.getElementById("mediaPermissionContainer")
-        if (permissionContainer){
-          permissionContainer.style.display = "block"
+        const permissionContainer = document.getElementById(
+          "mediaPermissionContainer"
+        );
+        if (permissionContainer) {
+          permissionContainer.style.display = "block";
         }
         // set permissions to false
       }
     } catch (error) {
       console.log(error.message);
-      if (error.message === "Permission denied"){
-        toast.error("Media device permissions denied")
-      // set media-permissions state to false 
-      setIsMediaGranted(false);
-      const permissionContainer = document.getElementById("mediaPermissionContainer")
-        if (permissionContainer){
-          permissionContainer.style.display = "block"
+      if (error.message === "Permission denied") {
+        toast.error("Media device permissions denied");
+        // set media-permissions state to false
+        setIsMediaGranted(false);
+        const permissionContainer = document.getElementById(
+          "mediaPermissionContainer"
+        );
+        if (permissionContainer) {
+          permissionContainer.style.display = "block";
         }
       }
       // set media-permissions state set to false
@@ -225,13 +232,14 @@ const resetScreen = (
       console.log(screenEls);
       let idx;
       for (let i = 0; i < screenEls.length; i++) {
-        console.log(screenEls[i], screenReset);
+        console.log(screenEls[i].fromId == screenReset);
+        console.log(screenEls[i].fromId, screenReset);
         if (screenEls[i].fromId === screenReset) {
           idx = i;
         }
       }
 
-      if (idx) {
+      if (idx || idx === 0) {
         screenEls.splice(idx, 1);
         console.log(screenEls, idx);
         setRemoteScreenStream([...screenEls]);
