@@ -4,7 +4,11 @@ const mediaList = (remoteVideoStream) => {
   try {
     return remoteVideoStream.map((vid, i) => {
       console.log(vid);
-      return <div key={vid.fromId}>{vid.component}</div>;
+      return (
+        <div className="full-width" key={vid.fromId}>
+          {vid.component}
+        </div>
+      );
     });
   } catch (error) {
     console.log(error.message);
@@ -71,7 +75,7 @@ const mediaDeviceList = (devices, onSetMediaDevice, setSelectedMediaDevice) => {
   return devices.map((device, i) => {
     try {
       return (
-        <Dropdown.Item>
+        <Dropdown.Item key={i}>
           {" "}
           <li onClick={onSetMediaDevice(i, setSelectedMediaDevice)}>
             {device.label}
@@ -90,9 +94,13 @@ const participantsCompList = (participantsList) => {
     try {
       console.log(participant);
       return (
-        <h1 key={i} id={`${participant.participantId}-name`}>
-          {participant.participantName}
-        </h1>
+        <div
+          key={i}
+          id={`${participant.participantId}-name`}
+          className="name-container"
+        >
+          <h1 className="participant-name">{participant.participantName}</h1>
+        </div>
       );
     } catch (error) {
       console.log(error.message);

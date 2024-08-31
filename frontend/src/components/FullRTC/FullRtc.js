@@ -71,10 +71,10 @@ const FullRtc = () => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
-  const [isMediaGranted, setIsMediaGranted] = useState(null); // for media permissions
+  const [isMediaGranted, setIsMediaGranted] = useState(false); // for media permissions
   const [participantsList, setParticipantsList] = useState([]); // for participants list
 
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef(null); // to track bottom of chat component
   const localClientNameRef = useRef(null);
   const localClientVideoRef = useRef(null);
 
@@ -272,15 +272,23 @@ const FullRtc = () => {
   }, []);
 
   useEffect(() => {
+    const localVideoWrapper = document.getElementById("localVideoWrapper");
+    const streamsContainer = document.getElementById("streams-container"); //all streams
+
     if (participantsList.length > 0) {
       console.log(participantsList);
+      streamsContainer.style.height = "20%";
+      localVideoWrapper.classList.remove("no-peer");
+      localVideoWrapper.classList.add("peer-connected");
+    } else {
+      streamsContainer.style.height = "100%";
+      localVideoWrapper.classList.remove("peer-connected");
+      localVideoWrapper.classList.add("no-peer");
     }
   }, [participantsList]);
 
   useEffect(() => {
     if (socket && confState) {
-      console.log(socketId);
-
       socket.emit(
         "joinConferenceRoom",
         {
@@ -303,13 +311,15 @@ const FullRtc = () => {
   useEffect(() => {
     if (roomRouterRtp) {
       (async () => {
-        setSocketId(socketObj.id);
         await createProducerDevices(
           producerDevices,
           roomRouterRtp,
           Device,
           setProducerDevices
         );
+        if (!socketId) {
+          setSocketId(socketObj.id);
+        }
       })();
     }
   }, [roomRouterRtp]);
@@ -327,6 +337,9 @@ const FullRtc = () => {
         audioDeviceRtpCapabilities &&
         screenDeviceRtpCapabilities
       ) {
+        console.log("ere");
+        console.log(socketId, accessKey, userName);
+
         socket.emit(
           "createWebRtcTransport",
           { producer: true, consumer: false, accessKey, userName, socketId },
@@ -343,6 +356,7 @@ const FullRtc = () => {
   useEffect(() => {
     // add listeners for video audio producers
     if (producerTransports) {
+      console.log(producerTransports);
       producerTransportListeners(
         accessKey,
         userName,
@@ -394,7 +408,11 @@ const FullRtc = () => {
           socketId,
           socket,
           participantsList,
-          setParticipantsList
+          setParticipantsList,
+          remoteVideoStream,
+          setRemoteVideoStream,
+          remoteAudioStream,
+          setRemoteAudioStream
         )
       );
 
@@ -402,6 +420,16 @@ const FullRtc = () => {
     }
   }, [producerTransports]);
 
+  //set streams container view depending on media approved state
+  useEffect(() => {
+    const streamContainer = document.getElementById("stream-container"); //indiviudals tream
+
+    if (isMediaGranted === false) {
+      streamContainer.style.display = "none";
+    } else {
+      streamContainer.style.display = "block";
+    }
+  }, [isMediaGranted]);
   // ///////////////////////////////////////////////////////////////////////// consume media
 
   useEffect(() => {
@@ -487,7 +515,7 @@ const FullRtc = () => {
   // add stream to hmtl;
 
   useEffect(() => {
-    if (remoteVideoStream.length > 0) {
+    if (remoteVideoStream.length >= 0) {
       console.log(remoteVideoStream);
 
       setVideoEls([...remoteVideoStream]);
@@ -495,7 +523,7 @@ const FullRtc = () => {
   }, [remoteVideoStream]);
 
   useEffect(() => {
-    if (remoteAudioStream.length > 0) {
+    if (remoteAudioStream.length >= 0) {
       console.log(remoteAudioStream);
 
       setAudioEls([...remoteAudioStream]);
@@ -596,41 +624,40 @@ const FullRtc = () => {
         <Col xs={12} id="members_container" className="p-0 m-0">
           {isMediaGranted === false ? <MediaPermission /> : null}
 
-          <div id="videos" className="p-0 m-0">
-            <div id="videoContainer" className="p-0 m-0 videoBg">
-              <div className="videoWrapper">
-                <div id="localVideoWrapper">
-                  <video
-                    ref={localClientVideoRef}
-                    className="videoPlayer p-0"
-                    id="local-video"
-                    autoPlay
-                    playsInline
-                  />
-                  <h1 ref={localClientNameRef} id="local-username">
-                    {userName}
-                  </h1>
-                  <audio
-                    className="VideoElem"
-                    id={`local-audio`}
-                    autoPlay
-                    playsInline
-                    muted
-                  ></audio>
-                  {/* </div> */}
-
-                  {/* <div id="remoteVideoWrapper"> */}
-                  {remoteNamesList}
-
-                  {videoList}
-                </div>
-              </div>
+          <div id="stream-container" className="p-0 m-0">
+            <div id="stream-box">
+              {/* <p>stream box</p> */}
+              {videoList}
+              {remoteNamesList}
               {audioList}
             </div>
 
-            <div id="screenContainer" className="p-0 m-0 videoBg">
-              <div className="screenWrapper">{screenList}</div>
+            <div id="streams-container" className="p-0 m-0 videoBg">
+              <div id="localVideoWrapper" className="no-peer">
+                <video
+                  ref={localClientVideoRef}
+                  className="videoPlayer p-0"
+                  id="local-video"
+                  autoPlay
+                  playsInline
+                />
+                <h1 ref={localClientNameRef} id="local-username">
+                  {userName}
+                </h1>
+
+                <audio
+                  className="VideoElem"
+                  id={`local-audio`}
+                  autoPlay
+                  playsInline
+                  muted
+                ></audio>
+              </div>
             </div>
+
+            {/* <div id="screenContainer" className="p-0 m-0 videoBg">
+              <div className="screenWrapper">{screenList}</div>
+            </div> */}
           </div>
         </Col>
 
@@ -760,6 +787,39 @@ const FullRtc = () => {
                   }}
                 />
               </div>
+
+              <div
+                title="Medien zurücksetzen"
+                className="control-container"
+                id="reset-call-btn"
+              >
+                <img
+                  className="icon"
+                  src="/icons/refresh.svg"
+                  alt="leave call button"
+                  onClick={() => {
+                    if (socket) {
+                      if (
+                        isStreamingAudio ||
+                        isStreamingVideo ||
+                        isScreenSharing
+                      ) {
+                        socket.emit("disconnectStreams");
+                        setIsStreamingVideo(false);
+                        setIsStreamingAudio(false);
+                        setIsScreenSharing(false);
+                        setIsCameraOn(false);
+                        setIsMicOn(false);
+                        toast.success(
+                          "deleted old streams, you can produce new streams"
+                        );
+                      } else {
+                        toast.error("no media found");
+                      }
+                    }
+                  }}
+                />
+              </div>
             </Col>
 
             <Col
@@ -825,7 +885,7 @@ const FullRtc = () => {
                       title="Chat-Nachricht senden"
                       className="sendMsgBtn btn"
                       onClick={() => {
-                        const input = document
+                        const msgInput = document
                           .getElementById("msgInput")
                           .focus();
                       }}

@@ -53,11 +53,13 @@ const onCreateProducerTP = (
   setProducerTransports
 ) => {
   return (data) => {
+    console.log(data);
     try {
       if (
         producerDevices.videoDevice &&
         producerDevices.audioDevice &&
-        producerDevices.screenDevice
+        producerDevices.screenDevice &&
+        data.params
       ) {
         // create send transport on each producerDevice;
         const videoProducerTransport =
@@ -85,9 +87,14 @@ const onCreateProducerTP = (
 
           setProducerTransports(transports);
         }
+      } else {
+        if (data.error) {
+          throw new Error(data.error.message);
+        }
       }
     } catch (error) {
       console.log(error.message);
+      toast.error(error.message);
     }
   };
 };
@@ -291,15 +298,20 @@ const onConsumeState = (
                           nameDisplay = "block";
                         }
                         const videoEl = (
-                          <video
-                            className="videoPlayer p-0 user2 remote"
-                            id={`${remoteProducer.from}-video`}
-                            // key={remoteProducer.from}
-                            autoPlay
-                            muted={muted}
-                            style={{ display: display }}
-                            playsInline
-                          ></video>
+                          <div
+                            id={`${remoteProducer.from}-video-container`}
+                            className="remote-video-container"
+                          >
+                            <video
+                              className="videoPlayer p-0 user2 remote"
+                              id={`${remoteProducer.from}-video`}
+                              // key={remoteProducer.from}
+                              autoPlay
+                              muted={muted}
+                              style={{ display: display }}
+                              playsInline
+                            ></video>
+                          </div>
                         );
                         const nameEl = document.getElementById(
                           `${remoteProducer.from}-name`
@@ -443,33 +455,107 @@ const onParticipantLeft = (
   socketId,
   socket,
   participantsList,
-  setParticipantsList
+  setParticipantsList,
+  videoEls,
+  setVideoEls,
+  audioEls,
+  setAudioEls
 ) => {
   return (data) => {
     try {
-      console.log("participantLeft id: ", data.participantId);
-      const videoEl = document.getElementById(`${data.participantId}-video`);
-      const audioEl = document.getElementById(`${data.participantId}-audio`);
-      const screenEl = document.getElementById(`${data.participantId}-screen`);
-      const nameEl = document.getElementById(`${data.participantId}-name`);
+      if (data.type) {
+        console.log("participantLeft id: ", data.participantId);
+        console.log(data);
+        const remoteMediaWrapper = document.getElementById(
+          `${data.participantId}-video-container`
+        );
+        const streamBox = document.getElementById("stream-box");
+        const videoEl = document.getElementById(`${data.participantId}-video`);
+        const audioEl = document.getElementById(`${data.participantId}-audio`);
+        const screenEl = document.getElementById(
+          `${data.participantId}-screen`
+        );
+        const nameEl = document.getElementById(`${data.participantId}-name`);
 
-      if (videoEl) {
-        videoEl.style.display = "none";
-      }
-      if (audioEl) {
-        audioEl.style.display = "none";
-      }
-      if (screenEl) {
-        screenEl.style.display = "none";
-      }
-      if (nameEl) {
-        nameEl.style.display = "none";
-      }
+        if (videoEl && streamBox) {
+          if (streamBox.contains(videoEl)) {
+            console.log(videoEls);
+            for (let i = 0; i < videoEls.length; i++) {
+              console.log(videoEls[i].fromId, data.participantId);
+              if (videoEls[i].fromId === data.participantId) {
+                console.log(videoEls[i]);
+                videoEls.splice(i, 1);
+              }
+            }
+            setVideoEls([...videoEls]);
 
-      console.log(videoEl);
-      console.log(audioEl);
-      console.log(screenEl);
-      console.log(nameEl);
+            for (let i = 0; i < videoEls.length; i++) {
+              console.log(videoEls[i]);
+            }
+            setTimeout(() => {
+              try {
+                streamBox.removeChild(videoEl);
+                if (data.type === "streamDrop") {
+                  nameEl.style.display = "block";
+                }
+              } catch (error) {
+                console.log(error.message);
+              }
+            }, 1000);
+          }
+        }
+        if (audioEl && streamBox) {
+          if (streamBox.contains(audioEl)) {
+            console.log(audioEls);
+            for (let i = 0; i < audioEls.length; i++) {
+              console.log(audioEls[i]);
+              if (audioEls[i].fromId === data.participantId) {
+                audioEls.splice(i, 1);
+              }
+            }
+            setAudioEls([...audioEls]);
+            setTimeout(() => {
+              try {
+                streamBox.removeChild(audioEl);
+              } catch (error) {
+                console.log(error.message);
+              }
+            }, 1000);
+          }
+        }
+        if (screenEl) {
+          // screenEl.remove();
+        }
+        if (nameEl && streamBox && data.type !== "streamDrop") {
+          if (streamBox.contains(nameEl)) {
+            setParticipantsList([...participantsList]);
+            setTimeout(() => {
+              try {
+                streamBox.removeChild(nameEl);
+              } catch (error) {
+                console.log(error.message);
+              }
+            }, 1000);
+          }
+        }
+
+        if (remoteMediaWrapper && streamBox) {
+          if (streamBox.contains(remoteMediaWrapper)) {
+            setTimeout(() => {
+              try {
+                streamBox.removeChild(remoteMediaWrapper);
+              } catch (error) {
+                console.log(error.message);
+              }
+            }, 1000);
+          }
+        }
+
+        console.log(videoEl);
+        console.log(audioEl);
+        console.log(screenEl);
+        console.log(nameEl);
+      }
 
       if (
         remoteVideoProducers[data.participantId] ||
@@ -501,13 +587,18 @@ const onParticipantLeft = (
         console.log(remoteScreenProducers);
       }
       for (let i = 0; i < participantsList.length; i++) {
-        if (participantsList[i].participantId === data.participantId) {
+        if (
+          participantsList[i].participantId === data.participantId &&
+          data.type !== "streamDrop"
+        ) {
           console.log("removed from list: ", participantsList[i].participantId);
           participantsList.splice(i, 1);
         }
       }
-      setParticipantsList([...participantsList]);
-      toast.error(`${name} left the room`);
+      if (data.type !== "streamDrop") {
+        setParticipantsList([...participantsList]);
+        toast.error(`${name} left the room`);
+      }
     } catch (error) {
       console.log(error.message);
     }
@@ -558,7 +649,10 @@ const onIncomingMessage = (messages, setMessages) => {
 const ontoggleRemoteMedia = () => {
   return (data) => {
     console.log(data, "mute");
-    const remoteMediaEl = document.getElementById(`${data.id}-${data.type}`);
+    const remoteMediaWrapper = document.getElementById(
+      `${data.id}-video-container`
+    ); //wrapper for remote media element
+    const remoteMediaEl = document.getElementById(`${data.id}-${data.type}`); //remote media/video element
     const nameEl = document.getElementById(`${data.id}-name`);
 
     if (remoteMediaEl) {
@@ -567,19 +661,22 @@ const ontoggleRemoteMedia = () => {
         remoteMediaEl.style.display = "block";
         if (nameEl && data.type === "video") {
           nameEl.style.display = "none";
+          remoteMediaWrapper.style.display = "block";
         }
         if (data.type === "audio") {
           remoteMediaEl.muted = false;
         }
         //set remote name or video depedning on remote camera state
         // alert(`${data.type} stream for ${data.id} has been unmuted`);
+
         toast.success(`${data.type} for ${data.name} stream been unmuted`);
       }
       if (data.action === "pause") {
-        remoteMediaEl.style.display = "none";
         remoteMediaEl.pause();
         if (nameEl && data.type === "video") {
           nameEl.style.display = "block";
+          remoteMediaEl.style.display = "none";
+          remoteMediaWrapper.style.display = "none";
         }
         if (data.type === "audio") {
           remoteMediaEl.muted = true;

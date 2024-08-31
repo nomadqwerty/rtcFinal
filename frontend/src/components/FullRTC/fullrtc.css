@@ -21,6 +21,8 @@
 }
 
 #members_container {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 93%;
   /* border: 1px solid red; */
@@ -31,28 +33,94 @@
 /* .clientName{
   display: none;
 } */
-#videos {
-  display: grid;
-  grid-template-columns: 1fr;
+#stream-container{
+  position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
   overflow: hidden;
-  /* position: relative; */
-  /* margin: auto; */
+  background-color: #3c3c3c;
   /* border: 1px solid red; */
 }
 
-.smallFrame .videoPlayer {
+#streams-container{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  flex-direction: row;
+  /* border: 1px solid blue !important; */
+  position: absolute;
+  bottom: 5px;
+  height: 20%;
+  width: 100%;
+}
+
+#stream-box{
+  background-color: #3c3c3c;
+  height: 100%;
+  /* border: 1px solid red; */
+  /* display: none; */
+}
+
+
+.video-container, .remote-video-container , .name-container{
+  display: flex;
+  justify-content: center !important;
+  align-items: center !important;
+  /* border: 1px solid green !important; */
+  height: 90%;
+  box-sizing: border-box;
+  margin: 0.5rem;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.remote-video-wrapper{
+  width: inherit;
+  height: inherit;
+}
+
+.remote-video-container{
   object-fit: cover;
 }
+
+.remote-video-container , .name-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0 ;
+  /* display: none; */
+}
+
+.full-width{
+  height: 100%;
+  width: 100%;
+}
+
+.participant-name{
+  color: white;
+  position: absolute;
+  text-align: center;
+  top: 45%;
+  left: 45%;
+}
+
+.videoPlayer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  
+  /* using object fit cover makes the video experience loss in size but using contain ensures all parts of video visible */
+  border-radius: 5px;
+  overflow: hidden;
+}
+
 .audioElem {
   opacity: 10;
   height: 50px;
-}
-.mediaPermissionContainer{
-  width: 100%;
-  height: 100%;
-  /* display: none; */
 }
 
 .videoWrapper {
@@ -61,21 +129,6 @@
 }
 .screenWrapper {
   display: flex;
-}
-.videoPlayer {
-  background-color: white;
-  /* border:1px solid red; */
-  width: 25%;
-  height: 25% !important;
-  object-fit: cover;
-  /* position: absolute; */
-  border-radius: 5px;
-  /* padding: 0.2rem; */
-  overflow: hidden;
-  /* display: block; */
-  /* z-index: 0; */
-  margin: auto;
-  margin-right: 10px;
 }
 
 .p-right {
@@ -88,27 +141,37 @@
   align-items: center;
 }
 
-#user1_div {
-  object-fit: cover;
-}
-
-.user2 {
-  display: block;
-}
-
-#user2 {
-  display: none;
-}
-
 .videoBg {
-  background-color: #3c3c3c !important;
+  /* background-color: #3c3c3c !important; */
   position: relative;
 }
-/* .videoBg h1{
+
+#localVideoWrapper {
   display: flex;
+  /* border: 1px solid red; */
+  background-color: #3c3c3c;
+  color: white; 
+  z-index: 100;
   justify-content: center;
   align-items: center;
-} */
+}
+
+.no-peer{
+  width: 100%;
+  height: 100%;
+  margin: 0 ;
+}
+
+.peer-connected{
+  width: 15rem;
+  height: 90%;
+  margin: 0.5rem ;
+  -webkit-box-shadow: 3px 3px 15px -1px rgb(0, 0, 0, 0.77);
+  box-shadow: 3px 3px 15px -1px rgb(0, 0, 0, 0.77);
+  border-radius: 5px; 
+  /* display: none; */
+}
+
 #localClientName {
   display: none;
 }
@@ -127,14 +190,6 @@
   text-align: center;
 }
 
-.stream-container {
-  width: 100vw;
-  height: 50vh;
-  padding: 10px;
-  display: none;
-  border: 1px solid yellow;
-}
-
 #stream_box {
   background-color: #3f434a;
 }
@@ -150,7 +205,6 @@
   right: 0px;
   display: none;
   /* /* border: 1px solid red; */
-  /* z-index: 999; */
 }
 
 .smallFrame {
@@ -355,17 +409,6 @@
   border: none !important;
 }
 
-@media screen and (max-width: 600px) {
-  .smallFrame {
-    height: 80px;
-    width: 120px;
-  }
-
-  /* .control-container img{
-        
-    } */
-}
-
 #chat-container {
   display: flex;
   flex-direction: column;
@@ -380,14 +423,4 @@
   margin-bottom: 0px;
 }
 
-#localVideoWrapper , #remoteVideoWrapper{
-  border: 1px solid red !important;
-  width: 100%;
-  height: 100% !important;
-  display: block;
-  z-index: 100;
-}
 
-#mediaPermissionContainer, #localVideoWrapper , #remoteVideoWrapper{
-  z-index: 100;
-}

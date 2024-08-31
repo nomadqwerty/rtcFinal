@@ -5,11 +5,11 @@ import React from "react";
 import { Toaster } from "react-hot-toast";
 
 //bootstrap imports
-import BootstrapClient from "@/utils/bootstrap/BootstrapClient";
+import BootstrapClient from "../utils/bootstrap/BootstrapClient";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 // import { SocketContext, socket } from "./context/SocketContext";
-import { ConferenceProvider } from "@/context/conference.context";
+import { ConferenceProvider } from "../context/conference.context";
 import { Container } from "react-bootstrap";
 import Loading from "../components/loading";
 

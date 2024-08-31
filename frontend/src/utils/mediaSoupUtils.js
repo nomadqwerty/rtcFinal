@@ -434,10 +434,15 @@ const produceScreenStream = (
         ) {
           const screenStream = await navigator.mediaDevices.getDisplayMedia();
           // TODO: add local stream to local video object:
+          const localScreen = document.getElementById("local-screen");
           console.log(screenStream);
           screenStream.getTracks().forEach((track) => {
             if (track.kind === "video") {
               const videoConstraints = track.getCapabilities();
+              const newVideoStream = new MediaStream([track]);
+              if (localScreen) {
+                localScreen.srcObject = newVideoStream;
+              }
 
               const height = videoConstraints.height.max * 0.8;
               const width = videoConstraints.width.max * 0.8;

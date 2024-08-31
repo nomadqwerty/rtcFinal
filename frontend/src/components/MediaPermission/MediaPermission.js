@@ -5,15 +5,28 @@ import "./mediapermission.css";
 
 export const MediaPermission = () => {
   return (
-    <Row className="mediaPermissionContainer">
-      <Col className="permission-error-div">
+    <Row xs={2} id="mediaPermissionContainer">
+        <Col xs={2} className="control-image-div" >
+        <Image
+            width={300}
+            height={200}
+            src="/images/permission-control.svg"
+            alt="media devices not allowed"
+            className="control-image"
+            loading="lazy"
+          />
+          </Col>
+          
+      <Col xs={10} className="permission-error-div">
         <div className="permission-image-div">
+
           <Image
             width={640}
             height={480}
             src="/images/media-permission.svg"
             alt="media devices not allowed"
             className="error-image"
+            loading="lazy"
           />
         </div>
 

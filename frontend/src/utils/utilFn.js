@@ -8,6 +8,9 @@ const getUserMedia = async (
   setAudioDevices,
   setIsMediaGranted
 ) => {
+  const permissionContainer = document.getElementById(
+    "mediaPermissionContainer"
+  ); // permissiond div
   if (navigator.mediaDevices) {
     try {
       const media = await navigator.mediaDevices.getUserMedia({
@@ -51,17 +54,11 @@ const getUserMedia = async (
         setSocket(socketObj);
         // set permissions to true
         setIsMediaGranted(true);
-        const permissionContainer = document.getElementById(
-          "mediaPermissionContainer"
-        );
         if (permissionContainer) {
           permissionContainer.style.display = "none";
         }
       } else {
         setIsMediaGranted(false);
-        const permissionContainer = document.getElementById(
-          "mediaPermissionContainer"
-        );
         if (permissionContainer) {
           permissionContainer.style.display = "block";
         }
@@ -69,13 +66,17 @@ const getUserMedia = async (
       }
     } catch (error) {
       console.log(error.message);
+      if (permissionContainer) {
+        permissionContainer.style.display = "block";
+      }
       if (error.message === "Permission denied") {
+        if (permissionContainer) {
+          permissionContainer.style.display = "block";
+        }
         toast.error("Media device permissions denied");
         // set media-permissions state to false
         setIsMediaGranted(false);
-        const permissionContainer = document.getElementById(
-          "mediaPermissionContainer"
-        );
+
         if (permissionContainer) {
           permissionContainer.style.display = "block";
         }
@@ -232,8 +233,7 @@ const resetScreen = (
       console.log(screenEls);
       let idx;
       for (let i = 0; i < screenEls.length; i++) {
-        console.log(screenEls[i].fromId == screenReset);
-        console.log(screenEls[i].fromId, screenReset);
+        console.log(screenEls[i], screenReset);
         if (screenEls[i].fromId === screenReset) {
           idx = i;
         }
