@@ -288,35 +288,7 @@ const onConsumeState = (
                         });
 
                       if (remoteProducer.kind === "video" && type === "video") {
-                        console.log(remoteProducer);
-                        let display = "block";
-                        let nameDisplay = "none";
-                        let muted = false;
-                        if (remoteProducer?.action === "pause") {
-                          display = "none";
-                          muted = true;
-                          nameDisplay = "block";
-                        }
-                        const videoEl = (
-                          <div
-                            id={`${remoteProducer.from}-video-container`}
-                            className="remote-video-container"
-                          >
-                            <video
-                              className="videoPlayer p-0 user2 remote"
-                              id={`${remoteProducer.from}-video`}
-                              // key={remoteProducer.from}
-                              autoPlay
-                              muted={muted}
-                              style={{ display: display }}
-                              playsInline
-                            ></video>
-                          </div>
-                        );
-                        const nameEl = document.getElementById(
-                          `${remoteProducer.from}-name`
-                        );
-                        nameEl.style.display = nameDisplay;
+                        const videoEl = <></>;
 
                         remoteProducer.videoStreamObject = consumerData;
                         socket.emit("consumerResume", {
@@ -332,6 +304,7 @@ const onConsumeState = (
                           track: remoteProducer.videoStreamObject.track,
                           component: videoEl,
                           name: remoteProducer.name,
+                          action: remoteProducer.action,
                         };
 
                         const oldStreams = remoteStreams;
@@ -351,16 +324,7 @@ const onConsumeState = (
                         if (remoteProducer?.action === "pause") {
                           muted = true;
                         }
-                        const audioEl = (
-                          <audio
-                            className="audioElem"
-                            id={`${remoteProducer.from}-audio`}
-                            key={remoteProducer.from}
-                            autoPlay
-                            muted={muted}
-                            playsInline
-                          ></audio>
-                        );
+                        const audioEl = <></>;
                         remoteProducer.audioStreamObject = consumerData;
                         socket.emit("consumerResume", {
                           fromId: remoteProducer.from,
@@ -374,6 +338,7 @@ const onConsumeState = (
                           type,
                           track: remoteProducer.audioStreamObject.track,
                           component: audioEl,
+                          action: remoteProducer.action,
                         };
 
                         const oldStreams = remoteStreams;
@@ -418,6 +383,7 @@ const onConsumeState = (
                           type,
                           track: remoteProducer.screenStreamObject.track,
                           component: videoEl,
+                          action: remoteProducer.action,
                         };
 
                         const oldStreams = remoteStreams;
@@ -492,16 +458,6 @@ const onParticipantLeft = (
             for (let i = 0; i < videoEls.length; i++) {
               console.log(videoEls[i]);
             }
-            setTimeout(() => {
-              try {
-                streamBox.removeChild(videoEl);
-                if (data.type === "streamDrop") {
-                  nameEl.style.display = "block";
-                }
-              } catch (error) {
-                console.log(error.message);
-              }
-            }, 1000);
           }
         }
         if (audioEl && streamBox) {
@@ -514,41 +470,10 @@ const onParticipantLeft = (
               }
             }
             setAudioEls([...audioEls]);
-            setTimeout(() => {
-              try {
-                streamBox.removeChild(audioEl);
-              } catch (error) {
-                console.log(error.message);
-              }
-            }, 1000);
           }
         }
         if (screenEl) {
           // screenEl.remove();
-        }
-        if (nameEl && streamBox && data.type !== "streamDrop") {
-          if (streamBox.contains(nameEl)) {
-            setParticipantsList([...participantsList]);
-            setTimeout(() => {
-              try {
-                streamBox.removeChild(nameEl);
-              } catch (error) {
-                console.log(error.message);
-              }
-            }, 1000);
-          }
-        }
-
-        if (remoteMediaWrapper && streamBox) {
-          if (streamBox.contains(remoteMediaWrapper)) {
-            setTimeout(() => {
-              try {
-                streamBox.removeChild(remoteMediaWrapper);
-              } catch (error) {
-                console.log(error.message);
-              }
-            }, 1000);
-          }
         }
 
         console.log(videoEl);
@@ -614,8 +539,19 @@ const onStoppedScreen = (
     try {
       console.log("stopped sharing screen for id: ", data.participantId);
       const screenEl = document.getElementById(`${data.participantId}-screen`);
+      const videoEl = document.getElementById(`${data.participantId}-video`);
+      const nameEl = document.getElementById(`${data.participantId}-header`);
       if (screenEl) {
-        screenEl.style.display = "none";
+        if (videoEl.isMuted) {
+          screenEl.style.display = "none";
+          videoEl.style.display = "none";
+          nameEl.style.display = "block";
+        } else {
+          screenEl.style.display = "none";
+          videoEl.style.display = "block";
+          nameEl.style.display = "none";
+        }
+        screenEl.isStopped = true;
       }
       console.log(screenEl);
       if (remoteScreenProducers[data.participantId]) {
@@ -649,19 +585,26 @@ const onIncomingMessage = (messages, setMessages) => {
 const ontoggleRemoteMedia = () => {
   return (data) => {
     console.log(data, "mute");
-    const remoteMediaWrapper = document.getElementById(
-      `${data.id}-video-container`
-    ); //wrapper for remote media element
+    const screenEl = document.getElementById(`${data.id}-screen`); //wrapper for remote media element
     const remoteMediaEl = document.getElementById(`${data.id}-${data.type}`); //remote media/video element
-    const nameEl = document.getElementById(`${data.id}-name`);
+    const nameEl = document.getElementById(`${data.id}-header`);
 
     if (remoteMediaEl) {
       if (data.action === "play") {
         remoteMediaEl.play();
-        remoteMediaEl.style.display = "block";
+        remoteMediaEl.isMuted = false;
         if (nameEl && data.type === "video") {
-          nameEl.style.display = "none";
-          remoteMediaWrapper.style.display = "block";
+          if (screenEl) {
+            if (screenEl.style.display === "block") {
+              remoteMediaEl.style.display = "none";
+            } else {
+              nameEl.style.display = "none";
+              remoteMediaEl.style.display = "block";
+            }
+          } else {
+            nameEl.style.display = "none";
+            remoteMediaEl.style.display = "block";
+          }
         }
         if (data.type === "audio") {
           remoteMediaEl.muted = false;
@@ -673,10 +616,19 @@ const ontoggleRemoteMedia = () => {
       }
       if (data.action === "pause") {
         remoteMediaEl.pause();
+        remoteMediaEl.isMuted = true;
         if (nameEl && data.type === "video") {
-          nameEl.style.display = "block";
-          remoteMediaEl.style.display = "none";
-          remoteMediaWrapper.style.display = "none";
+          if (screenEl) {
+            if (screenEl.style.display === "block") {
+              nameEl.style.display = "none";
+            } else {
+              nameEl.style.display = "block";
+              remoteMediaEl.style.display = "none";
+            }
+          } else {
+            remoteMediaEl.style.display = "none";
+            nameEl.style.display = "block";
+          }
         }
         if (data.type === "audio") {
           remoteMediaEl.muted = true;

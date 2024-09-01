@@ -167,6 +167,33 @@ const Settings = ({ ...props }) => {
         </Row>
       </Col>
 
+      <Col className="mb-4">
+        <Row className="device-test-wrapper" xxs={1} xs={2}>
+          <Col xs={12} className="p-0">
+            <p className="test-topic">Test Ihrer Lautsprecher</p>
+          </Col>
+          <Col xs={3} className="p-0">
+            <button
+              //   id="test-device-button"
+              type="button"
+              title="Klicken Sie auf Start, um den Lautsprecher zu testen"
+              className="btn settings-start-button"
+            >
+              Start
+            </button>
+          </Col>
+
+          <Col xs={9}>
+            <input
+              id="speakerTestOutput"
+              placeholder="Klicken Sie auf Start, um den Lautsprecher zu testen"
+              className="device-test-output p-1 border-0"
+              readOnly
+            />
+          </Col>
+        </Row>
+      </Col>
+
       <audio style={{ display: "none" }} />
     </Row>
   );

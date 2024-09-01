@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <Suspense fallback={<Loading />}>
           <Container id="root" className="p-0 m-0" fluid>
-            <Toaster position="top-right" />
+            <Toaster position="top-center" />
             <ConferenceProvider>{children}</ConferenceProvider>
           </Container>
         </Suspense>

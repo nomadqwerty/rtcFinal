@@ -277,7 +277,10 @@ const produceVideoStream = (
               };
               // TODO: store producer and and track state
               producerTransports.videoProducerTransport.produce(vidParams);
+              const screenEl = document.getElementById("local-screen");
+              screenEl.style.display = "none";
               const videoEl = document.getElementById("local-video");
+              videoEl.style.display = "block";
               const newVideoStream = new MediaStream([track]);
               videoEl.srcObject = newVideoStream;
             }
@@ -288,6 +291,8 @@ const produceVideoStream = (
           toast.success("video stream has started");
         } else {
           const videoEl = document.getElementById("local-video");
+          const screenEl = document.getElementById("local-screen");
+          const nameEl = document.getElementById("local-username");
           console.log(videoEl.muted);
           if (!videoEl.muted) {
             videoEl.pause();
@@ -299,8 +304,15 @@ const produceVideoStream = (
               action: "pause",
               name: userName,
             });
+
+            if (screenEl.hasMedia) {
+              console.log(nameEl);
+              screenEl.style.display = "block";
+              nameEl.style.display = "none";
+            }
             // alert("video stream is muted");
             setIsCameraOn(false);
+
             toast.error("video stream is muted");
           } else {
             videoEl.play();
@@ -312,6 +324,8 @@ const produceVideoStream = (
               action: "play",
               name: userName,
             });
+            const screenEl = document.getElementById("local-screen");
+            screenEl.style.display = "none";
             setIsCameraOn(true);
             toast.success("video stream is unmuted");
           }
@@ -441,7 +455,12 @@ const produceScreenStream = (
               const videoConstraints = track.getCapabilities();
               const newVideoStream = new MediaStream([track]);
               if (localScreen) {
+                const videoEl = document.getElementById("local-video");
+                videoEl.style.display = "none";
                 localScreen.srcObject = newVideoStream;
+
+                localScreen.style.display = "block";
+                localScreen.hasMedia = true;
               }
 
               const height = videoConstraints.height.max * 0.8;
@@ -462,6 +481,7 @@ const produceScreenStream = (
                   userName,
                   socketId,
                 });
+                localScreen.hasMedia = false;
               };
               const screenParams = {
                 track: track,

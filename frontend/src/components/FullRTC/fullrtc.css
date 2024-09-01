@@ -33,7 +33,7 @@
 /* .clientName{
   display: none;
 } */
-#stream-container{
+#stream-container {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -44,7 +44,7 @@
   /* border: 1px solid red; */
 }
 
-#streams-container{
+#streams-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -57,15 +57,16 @@
   width: 100%;
 }
 
-#stream-box{
+#stream-box {
   background-color: #3c3c3c;
   height: 100%;
   /* border: 1px solid red; */
   /* display: none; */
 }
 
-
-.video-container, .remote-video-container , .name-container{
+.video-container,
+.remote-video-container,
+.name-container {
   display: flex;
   justify-content: center !important;
   align-items: center !important;
@@ -77,42 +78,43 @@
   overflow: hidden;
 }
 
-.remote-video-wrapper{
+.remote-video-wrapper {
   width: inherit;
   height: inherit;
 }
 
-.remote-video-container{
+.remote-video-container {
   object-fit: cover;
 }
 
-.remote-video-container , .name-container{
+.remote-video-container,
+.name-container {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 100%;
-  margin: 0 ;
+  margin: 0;
   /* display: none; */
 }
 
-.full-width{
+.full-width {
   height: 100%;
   width: 100%;
 }
 
-.participant-name{
+.participant-name {
   color: white;
-  position: absolute;
   text-align: center;
+  position: relative;
   top: 45%;
-  left: 45%;
+  left: 0%;
 }
 
 .videoPlayer {
   width: 100%;
   height: 100%;
-  object-fit: cover;  
+  object-fit: cover;
   /* using object fit cover makes the video experience loss in size but using contain ensures all parts of video visible */
   border-radius: 5px;
   overflow: hidden;
@@ -150,25 +152,25 @@
   display: flex;
   /* border: 1px solid red; */
   background-color: #3c3c3c;
-  color: white; 
+  color: white;
   z-index: 100;
   justify-content: center;
   align-items: center;
 }
 
-.no-peer{
+.no-peer {
   width: 100%;
   height: 100%;
-  margin: 0 ;
+  margin: 0;
 }
 
-.peer-connected{
+.peer-connected {
   width: 15rem;
   height: 90%;
-  margin: 0.5rem ;
+  margin: 0.5rem;
   -webkit-box-shadow: 3px 3px 15px -1px rgb(0, 0, 0, 0.77);
   box-shadow: 3px 3px 15px -1px rgb(0, 0, 0, 0.77);
-  border-radius: 5px; 
+  border-radius: 5px;
   /* display: none; */
 }
 
@@ -422,5 +424,3 @@
   max-height: calc(94%); /* Adjust based on your layout */
   margin-bottom: 0px;
 }
-
-

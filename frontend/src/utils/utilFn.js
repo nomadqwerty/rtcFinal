@@ -6,7 +6,8 @@ const getUserMedia = async (
   socketObj,
   setVideoDevices,
   setAudioDevices,
-  setIsMediaGranted
+  setIsMediaGranted,
+  setSpeakerDevices
 ) => {
   const permissionContainer = document.getElementById(
     "mediaPermissionContainer"
@@ -22,6 +23,8 @@ const getUserMedia = async (
         media.getTracks().forEach((track) => {
           if (track.kind === "video") {
             const videoEl = document.getElementById("local-video");
+            const screenEl = document.getElementById("local-screen");
+            screenEl.style.display = "none";
             const newVideoStream = new MediaStream([track]);
             if (videoEl) {
               videoEl.srcObject = newVideoStream;
@@ -38,6 +41,7 @@ const getUserMedia = async (
         const mediaDevices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = [];
         const audioDevices = [];
+        const audioSpeakers = [];
         for (let i = 0; i < mediaDevices.length; i++) {
           if (mediaDevices[i].kind === "videoinput") {
             videoDevices.push(mediaDevices[i]);
@@ -45,10 +49,14 @@ const getUserMedia = async (
           if (mediaDevices[i].kind === "audioinput") {
             audioDevices.push(mediaDevices[i]);
           }
+          if (mediaDevices[i].kind === "audiooutput") {
+            audioSpeakers.push(mediaDevices[i]);
+          }
         }
 
         setVideoDevices([...videoDevices]);
         setAudioDevices([...audioDevices]);
+        setSpeakerDevices([...audioSpeakers]);
 
         setSocketId(socketObj.id);
         setSocket(socketObj);
@@ -162,11 +170,13 @@ const addVideoStream = (videoEls) => {
           const videoEl = document.getElementById(
             `${videoEls[i].fromId}-video`
           );
+          console.log(videoEl);
           console.log(`${videoEls[i].fromId}-video`);
           const videoFeed = new MediaStream([videoEls[i].track]);
 
           videoEl.srcObject = videoFeed;
           videoEls[i].isLoaded = true;
+          console.log(videoEl.srcObject);
         }
       }
     }
@@ -186,7 +196,7 @@ const addAudioStream = (audioEls) => {
           );
           console.log(`${audioEls[i].fromId}-audio`);
           const audioFeed = new MediaStream([audioEls[i].track]);
-
+          console.log(audioEl);
           audioEl.srcObject = audioFeed;
           audioEls[i].isLoaded = true;
         }
@@ -206,10 +216,18 @@ const addScreenStream = (screenEls) => {
           const screenEl = document.getElementById(
             `${screenEls[i].fromId}-screen`
           );
-
+          console.log(screenEl);
+          const nameEl = document.getElementById(
+            `${screenEls[i].fromId}-header`
+          );
+          const videoEl = document.getElementById(
+            `${screenEls[i].fromId}-video`
+          );
+          nameEl.style.display = "none";
+          videoEl.style.display = "none";
           screenEl.style.display = "block";
-
           console.log(`${screenEls[i].fromId}-screen`);
+          screenEl.isStopped = false;
           const videoFeed = new MediaStream([screenEls[i].track]);
 
           screenEl.srcObject = videoFeed;
@@ -296,6 +314,15 @@ const onSetAudioDevice = (idx, setSelectedAudioDevice) => {
     console.log(error.message);
   }
 };
+const onSetSpeakerDevice = (idx, setSelectedSpeakerDevice) => {
+  try {
+    return (e) => {
+      setSelectedSpeakerDevice(idx);
+    };
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
 const stopTesting = (setSelectedVideoDevice, setSelectedAudioDevice) => {
   return () => {
@@ -327,5 +354,6 @@ export {
   testUserMedia,
   onSetVideoDevice,
   onSetAudioDevice,
+  onSetSpeakerDevice,
   stopTesting,
 };

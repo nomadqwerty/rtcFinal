@@ -1,6 +1,7 @@
 "use client";
 // import styles from "./FullRtc.module.scss";
 import "./fullrtc.css";
+import Dropdown from "react-bootstrap/Dropdown";
 import { useContext, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
@@ -24,6 +25,7 @@ import {
   testUserMedia,
   onSetVideoDevice,
   onSetAudioDevice,
+  onSetSpeakerDevice,
 } from "../../utils/utilFn";
 
 import {
@@ -45,6 +47,7 @@ import {
   screenArray,
   mediaDeviceList,
   participantsCompList,
+  participantDropDown,
 } from "./Lists";
 
 import {
@@ -213,10 +216,13 @@ const FullRtc = () => {
   const [videoDevices, setVideoDevices] = useState([]);
   const [selectedVideoDevice, setSelectedVideoDevice] = useState(null);
   const [audioDevices, setAudioDevices] = useState([]);
+  const [speakerDevices, setSpeakerDevices] = useState([]);
   const [selectedAudioDevice, setSelectedAudioDevice] = useState(null);
+  const [selectedSpeakerDevice, setSelectedSpeakerDevice] = useState(null);
   const [userName, setUserName] = useState("");
   const [accessKey, setAccessKey] = useState("");
   const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [viewFocus, setViewFocus] = useState(false);
 
   const confState = useContext(conferenceContext);
 
@@ -253,7 +259,8 @@ const FullRtc = () => {
               socketObj,
               setVideoDevices,
               setAudioDevices,
-              setIsMediaGranted
+              setIsMediaGranted,
+              setSpeakerDevices
             );
           } else {
             toast.error("you are not in a room");
@@ -557,10 +564,12 @@ const FullRtc = () => {
   const videoList = mediaList(remoteVideoStream);
   const audioList = mediaList(remoteAudioStream);
   const screenList = screenArray(remoteScreenStream);
+  const peers = participantDropDown(participantsList);
   const messagesList = messagesArray(messages, userName);
   const remoteNamesList = participantsCompList(participantsList);
 
   // Scroll to the bottom of the chat when messages change
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -606,8 +615,14 @@ const FullRtc = () => {
       // const localClientVideo = document.getElementById("local-video"); //get localvideo
       // const localClientName = document.getElementById("local-video"); //get local username
 
-      localClientNameRef.current.style.display = "block";
       localClientVideoRef.current.style.display = "none";
+      const screenEl = document.getElementById("local-screen");
+
+      if (screenEl.hasMedia) {
+        localClientNameRef.current.style.display = "none";
+      } else {
+        localClientNameRef.current.style.display = "block";
+      }
 
       console.log("is camera on: ", isCameraOn);
     } else {
@@ -615,6 +630,21 @@ const FullRtc = () => {
       localClientVideoRef.current.style.display = "block";
     }
   }, [isCameraOn]);
+
+  useEffect(() => {
+    if (!isScreenSharing) {
+      const screenEl = document.getElementById("local-screen");
+      screenEl.style.display = "none";
+      if (isCameraOn) {
+        localClientNameRef.current.style.display = "none";
+        localClientVideoRef.current.style.display = "block";
+      } else {
+        localClientNameRef.current.style.display = "block";
+        localClientVideoRef.current.style.display = "none";
+      }
+    } else {
+    }
+  }, [isScreenSharing]);
 
   //////////////////////////ui
 
@@ -625,11 +655,31 @@ const FullRtc = () => {
           {isMediaGranted === false ? <MediaPermission /> : null}
 
           <div id="stream-container" className="p-0 m-0">
+            {participantsList.length > 0 ? (
+              <div
+                style={{
+                  position: "absolute",
+                  padding: "10px",
+                  zIndex: "10",
+                }}
+              >
+                <Col xs={9}>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="light" id="dropdown-basic">
+                      participants
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>{peers}</Dropdown.Menu>
+                  </Dropdown>
+                </Col>
+              </div>
+            ) : (
+              ""
+            )}
             <div id="stream-box">
               {/* <p>stream box</p> */}
-              {videoList}
+              {/* {videoList} */}
               {remoteNamesList}
-              {audioList}
             </div>
 
             <div id="streams-container" className="p-0 m-0 videoBg">
@@ -641,6 +691,14 @@ const FullRtc = () => {
                   autoPlay
                   playsInline
                 />
+
+                <video
+                  className="videoPlayer p-0"
+                  id="local-screen"
+                  autoPlay
+                  playsInline
+                />
+
                 <h1 ref={localClientNameRef} id="local-username">
                   {userName}
                 </h1>
@@ -792,6 +850,7 @@ const FullRtc = () => {
                 title="Medien zurücksetzen"
                 className="control-container"
                 id="reset-call-btn"
+                style={{ display: "none" }}
               >
                 <img
                   className="icon"
@@ -914,6 +973,11 @@ const FullRtc = () => {
               audioDevices,
               onSetAudioDevice,
               setSelectedAudioDevice
+            )}
+            speakerList={mediaDeviceList(
+              speakerDevices,
+              onSetSpeakerDevice,
+              setSelectedSpeakerDevice
             )}
             isStreamingAudio={isStreamingAudio}
           />
